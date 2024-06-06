@@ -81,7 +81,7 @@ def create_set(df):
 df_small = df.sample(frac=0.05)
 df_medium = df.sample(frac=0.1)
 df_large = df.sample(frac=0.15)
-df_larger = df.sample(frac=0.20
+df_larger = df.sample(frac=0.20)
 df_largest = df.sample(frac=0.25)
 
 df_small.shape[0]
@@ -98,7 +98,7 @@ train_dataset = create_set(train_df)
 valid_dataset = create_set(valid_df)
 test_dataset = create_set(test_df)
 
-Define metrics computation function
+# Define metrics computation function
 def compute_metrics(pred):
     labels = pred.label_ids
     preds = pred.predictions.argmax(-1)
@@ -110,6 +110,8 @@ def compute_metrics(pred):
         'precision': precision,
         'recall': recall
     }
+
+
 
 # Define training arguments
 training_args = TrainingArguments(
@@ -163,26 +165,33 @@ probs = softmax(pred.predictions, axis=1)
 # then we sort the sentences according to the probabilities
 sorted_sentences = np.argsort(probs[:,0])
 
-# show 100 sentences with highest red probability
+# show 100 sentences with highest green probability
+df_prob_green = test_df.iloc[sorted_sentences[-100:]]
+test_df.iloc[sorted_sentences[-100:]]
+
+# show 100 sentences with highest red probability for the past participle 'geschreven'
+df_schrijven = df[df['participle_lemma'] == 'schrijven']
+pred = trainer.predict(create_set(df_schrijven))
+
+# using the softmax function, we transform the logits to probabilities
+probs = softmax(pred.predictions, axis=1)
+# then we sort the sentences according to the probabilities
+sorted_sentences = np.argsort(probs[:,0])
+
+#print(df_schrijven)
 df_prob_red = df_schrijven.iloc[sorted_sentences[0:100]]
 df_schrijven.iloc[sorted_sentences[0:100]]
 
 # save the 250 sentences with the highest probabilty of accuring in the red verb order according to BERTje
 #df_prob_red.to_csv('df_prob_red__schrijven_B250.csv')
 
-# show 100 sentences with highest green probability
-df_prob_green = test_df.iloc[sorted_sentences[-100:]]
-test_df.iloc[sorted_sentences[-100:]]
 
 # misclassifications for the past participle 'geschreven'
 # in order to get the misclassifications for the verb 'geschreven',
 # we use the dataframe with the sentences containing 'geschreven' 
 # as a testset
-pred = trainer.predict(create_set(df_schrijven))
 df_prob_green = df_schrijven.iloc[sorted_sentences[-600:]]
 
-pred.metrics
-print(pred)
 df_prob_green = df_schrijven.iloc[sorted_sentences[-600:]]
 df_red_misclassified = df_prob_green[df_prob_green['order'] == 'red']
 

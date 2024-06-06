@@ -174,9 +174,16 @@ df_schrijven.iloc[sorted_sentences[0:100]]
 df_prob_green = test_df.iloc[sorted_sentences[-100:]]
 test_df.iloc[sorted_sentences[-100:]]
 
-# misclassifications
+# misclassifications for the past participle 'geschreven'
+# in order to get the misclassifications for the verb 'geschreven',
+# we use the dataframe with the sentences containing 'geschreven' 
+# as a testset
+pred = trainer.predict(create_set(df_schrijven))
 df_prob_green = df_schrijven.iloc[sorted_sentences[-600:]]
 
+pred.metrics
+print(pred)
+df_prob_green = df_schrijven.iloc[sorted_sentences[-600:]]
 df_red_misclassified = df_prob_green[df_prob_green['order'] == 'red']
 
 # Save misclassified red sentences to a CSV file

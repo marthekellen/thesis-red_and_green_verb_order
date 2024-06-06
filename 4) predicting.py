@@ -14,6 +14,7 @@ from urllib.request import urlretrieve
 from scipy.special import softmax
 import copy
 from tqdm import tqdm
+from sklearn.metrics import confusion_matrix
 
 # define the GPU
 cuda = torch.device('cuda')
@@ -147,6 +148,16 @@ pred = trainer.predict(test_dataset)
 # Print prediction matrix
 pred.metrics
 
+# Function to calculate confusion metrics
+def compute_confusion_matrix(pred):
+    labels = pred.label_ids
+    preds = pred.predictions.argmax(-1)
+    conf_matrix = confusion_matrix(labels, preds)
+    return conf_matrix
+
+# Print confusion metrics
+compute_confusion_matrix(pred)
+
 # using the softmax function, we transform the logits to probabilities
 probs = softmax(pred.predictions, axis=1)
 # then we sort the sentences according to the probabilities
@@ -155,6 +166,9 @@ sorted_sentences = np.argsort(probs[:,0])
 # show 100 sentences with highest red probability
 df_prob_red = df_schrijven.iloc[sorted_sentences[0:100]]
 df_schrijven.iloc[sorted_sentences[0:100]]
+
+# save the 250 sentences with the highest probabilty of accuring in the red verb order according to BERTje
+#df_prob_red.to_csv('df_prob_red__schrijven_B250.csv')
 
 # show 100 sentences with highest green probability
 df_prob_green = test_df.iloc[sorted_sentences[-100:]]

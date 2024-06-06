@@ -285,3 +285,55 @@ fig = px.scatter(df_verb, x='x', y='y', color='order',
                  color_discrete_map={'red': 'red', 'green': 'green'},
                  hover_data='sentence')
 fig.show()
+
+# We check whether the sentences with the highest probability of occuring in the red
+# red verb order are situated in the red spot
+# In order to execute this, you first need to run the '4) predicting script'
+newframe = pd.read_csv('df_prob_red__schrijven_B250.csv')
+
+prob_red_tuples = set(zip(newframe['sentence'], newframe['order']))
+schrijven_sent= df[df['participle_lemma'] == 'schrijven']
+df_schrijf = get_df_with_pca(schrijven_sent)
+
+schrijven_sent['highest red probability'] = schrijven_sentencs.apply(
+    lambda row: 'highest red probability' if (row['sentence'], row['order']) in prob_red_tuples else row['order'],
+    axis = 1)
+order_schrijf = schrijven_sent["highest red probability"]
+df_schrijf['order - highest red probability'] = order_schrijf
+
+fig = px.scatter(df_schrijf, x='x', y='y', color='order - highest red probability',
+                 color_discrete_map={'red': 'red', 'green': 'green', 'highest red probability': 'blue'},
+                 hover_data='sentence')
+fig.show()
+
+# We check whether the misclassified sentences for the past participle 'schrijven'
+# are situated outside the red spot
+# In order to execute this, you first need to run the '4) predicting' script
+newframe = pd.read_csv('df_prob_red_misclassified_schrijven_.csv')
+
+misclassified_red_tuples = set(zip(newframe['sentence'], newframe['order']))
+schrijven_sent= df[df['participle_lemma'] == 'schrijven']
+df_schrijf = get_df_with_pca(schrijven_sent)
+
+schrijven_sent['misclassified'] = schrijven_sent.apply(
+    lambda row: 'misclassified' if (row['sentence'], row['order']) in misclassified_red_tuples else row['order'],
+    axis = 1)
+
+# Reorder the dataframe to place 'misclassified' entries at the end
+schrijven_sent['sort_key'] = schrijven_sent['misclassified'].apply(lambda x: 1 if x == 'misclassified' else 0)
+schrijven_sent = schrijven_sent.sort_values(by='sort_key')
+
+# Drop the sort key column after sorting
+schrijven_sent = schrijven_sent.drop(columns=['sort_key'])
+
+# Get the updated order
+order_schrijf = schrijven_sent["misclassified"]
+
+# Add the order to the PCA dataframe
+df_schrijf['order - misclassified'] = order_schrijf.values
+
+# Plot the past participles in the red and green verb order and the misclassifications in another color
+fig = px.scatter(df_schrijf, x='x', y='y', color='order - misclassified',
+                 color_discrete_map={'red': 'red', 'green': 'green', 'misclassified': 'blue'},
+                 hover_data='sentence')
+fig.show()
